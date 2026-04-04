@@ -3,7 +3,7 @@
 > **AI INSTRUCTION:** Read this file at the beginning of a session to understand what backend features, tables, and auth paradigms exist. Update this file when an endpoint or service is finalized.
 
 ## 🟢 Completed API Features
-- **Call Feature (Milestone 1 Core)**: `CreateRoom` (REST) and `JoinRoom` (Socket.IO) features are operational. Strict TDD implemented and Clean Architecture enforced. Room and Peer entities available.
+- **Call Feature (Milestone 1 Core)**: `CreateRoom` (REST) and `JoinRoom` (Socket.IO) features are operational. Strict TDD implemented and Clean Architecture enforced (100% Jest line coverage). Constants extracted (`error_messages`, `socket_events`). Room and Peer entities available.
 
 ---
 
