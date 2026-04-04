@@ -94,4 +94,33 @@ describe('SignalingGateway', () => {
     expect(mockJoinRoomUseCase.execute).not.toHaveBeenCalled();
     expect(mockAck).toHaveBeenCalledWith(expect.objectContaining({ error: expect.any(Object) }));
   });
+
+  it('should reject when JoinRoomUseCase returns a Left failure', async () => {
+    signalingGateway.init();
+    const connectionCallback = mockIo.on.mock.calls[0][1];
+    connectionCallback(mockSocket);
+
+    const joinRoomCallback = mockSocket.on.mock.calls.find((call: any[]) => call[0] === SOCKET_EVENTS.JOIN_ROOM)[1];
+    const mockAck = jest.fn();
+    
+    mockJoinRoomUseCase.execute.mockResolvedValue(left({ message: 'Internal Error', code: 500 } as any));
+
+    await joinRoomCallback({ code: '123456', peerName: 'Bob' }, mockAck);
+
+    expect(mockAck).toHaveBeenCalledWith({ error: 'Internal Error' });
+    expect(mockSocket.join).not.toHaveBeenCalled();
+  });
+
+  it('should handle disconnect event', () => {
+    signalingGateway.init();
+    const connectionCallback = mockIo.on.mock.calls[0][1];
+    connectionCallback(mockSocket);
+
+    const disconnectCall = mockSocket.on.mock.calls.find((call: any[]) => call[0] === SOCKET_EVENTS.DISCONNECT);
+    expect(disconnectCall).toBeDefined();
+
+    const disconnectCallback = disconnectCall[1];
+    // We just verify it executes without errors (since it's a console log currently)
+    expect(() => disconnectCallback()).not.toThrow();
+  });
 });

@@ -41,4 +41,13 @@ describe('JoinRoomUseCase', () => {
     expect(result.isLeft()).toBe(true);
     expect((result as any).value.message).toBe(ERROR_MESSAGES.ROOM_NOT_FOUND);
   });
+
+  it('should return ServerFailure if repository throws an error', async () => {
+    mockRoomRepository.findByCode.mockRejectedValue(new Error('DB failure'));
+
+    const result = await joinRoomUseCase.execute({ code: '123456', peerName: 'Bob' });
+
+    expect(result.isLeft()).toBe(true);
+    expect((result as any).value.message).toBe(ERROR_MESSAGES.ROOM_JOIN_FAILED);
+  });
 });
