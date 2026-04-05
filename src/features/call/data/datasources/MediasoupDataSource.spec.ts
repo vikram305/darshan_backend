@@ -45,7 +45,7 @@ describe('MediasoupDataSource', () => {
   it('should allow creating a router with proper codecs after initialization', async () => {
     mockWorker.createRouter.mockResolvedValue('mock-router');
     await dataSource.initialize();
-    const router = await dataSource.createRouter();
+    const router = await dataSource.getOrCreateRouter('room1');
     
     expect(router).toBe('mock-router');
     expect(mockWorker.createRouter).toHaveBeenCalledTimes(1);
@@ -58,7 +58,7 @@ describe('MediasoupDataSource', () => {
     expect(callArgs.mediaCodecs.some((c: any) => c.mimeType === 'video/H264')).toBe(true);
   });
 
-  it('should throw an error if createRouter is called before initialize', async () => {
-    await expect(dataSource.createRouter()).rejects.toThrow('Mediasoup worker not initialized');
+  it('should throw an error if getOrCreateRouter is called before initialize', async () => {
+    await expect(dataSource.getOrCreateRouter('room1')).rejects.toThrow('Mediasoup worker not initialized');
   });
 });

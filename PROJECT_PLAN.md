@@ -745,12 +745,11 @@ Why BLoC?
 2. ⬜ Set up task tracking (GitHub Projects)
 3. ⬜ Create backend repository
 4. ⬜ Create Flutter repository
-5. ⬜ Start Milestone 1
+5. ⬜ Start Milestone 3
 
-### Week 1 Focus
-- Backend project setup
-- Core entities
-- Basic Mediasoup integration
+### Week 3 Focus
+- Clean up any backend technical debt
+- Prepare for Flutter testing
 
 ### First Month Goal
 - ✅ Backend working
@@ -759,7 +758,7 @@ Why BLoC?
 
 ---
 
-**Last Updated:** 2026-04-03  
-**Current Milestone:** Milestone 1 - Backend Core  
-**Status:** Planning → Ready to Build  
-**Primary Focus:** Backend (Week 1) → Fast-tracking backend completion for this week
+**Last Updated:** 2026-04-05  
+**Current Milestone:** Milestone 3 - Flutter Project Setup  
+**Status:** Completed Backend Core -> Ready for Flutter  
+**Primary Focus:** Flutter app architecture

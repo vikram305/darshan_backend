@@ -4,11 +4,12 @@
 
 ## 🟢 Completed API Features
 - **Call Feature (Milestone 1 Core)**: `CreateRoom` (REST) and `JoinRoom` (Socket.IO) features are operational. Strict TDD implemented and Clean Architecture enforced (100% Jest line coverage). Constants extracted (`error_messages`, `socket_events`). Room and Peer entities available.
+- **WebRTC Signaling (Milestone 2)**: Full WebRTC transport logic established using Mediasoup. Implemented `GetRouterCapabilities`, `CreateTransport`, `ConnectTransport`, `Produce`, `Consume`, and `ResumeConsumer` use cases. Mediasoup worker and router auto-scaled per room. Graceful `LeaveRoom` garbage collection on disconnects.
 
 ---
 
 ## 🟡 In Progress
-- **Milestone 2 (WebRTC Signaling)**: Remaining WebRTC transport logic.
+- **Milestone 3 (Flutter WebRTC Integration - Pre-work)**: Getting ready for client-side integration of flutter WebRTC.
 
 ---
 
