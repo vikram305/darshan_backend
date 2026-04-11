@@ -41,6 +41,8 @@
     - **Controllers**: Document the incoming DTO shape and the outgoing HTTP Status codes.
     - Avoid redundant inline comments. Document *why* complex logic exists.
 
+12. **Unified API Responses**: ALL controller HTTP responses MUST be wrapped in the `ApiResponse` utility (`core/network/api_response.ts`) to guarantee the `{ success, message, data }` JSON structure. NEVER return raw data objects. Always use `ApiResponse.success()` or `ApiResponse.error()` in combination with the centralized `HttpStatus` constants enum.
+
 ## File Generation Requirements:
 If you are generating a new feature, you must create files in this precise order:
 1. `Domain Layer`: `entity.ts` -> abstract `repository.ts` -> `usecase.ts` -> `usecase.spec.ts`

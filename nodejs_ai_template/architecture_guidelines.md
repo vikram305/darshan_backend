@@ -306,6 +306,7 @@ import { Request, Response } from 'express';
 import { GetUserUseCase } from '../../domain/usecases/get_user';
 import { container } from 'tsyringe';
 import { DatabaseFailure } from '../../../../core/error/failure';
+import { HttpStatus } from '../../../../core/constants/http_status';
 
 export class UserController {
   static async getUser(req: Request, res: Response) {
@@ -314,7 +315,7 @@ export class UserController {
     // 1. Validate request using DTO
     const resultDto = GetUserDtoSchema.safeParse(req.params);
     if (!resultDto.success) {
-      return res.status(400).json({ errors: resultDto.error.errors });
+      return res.status(HttpStatus.BAD_REQUEST).json({ errors: resultDto.error.errors });
     }
 
     // 2. Execute UseCase
@@ -323,14 +324,15 @@ export class UserController {
     if (result.isLeft()) {
       const error = result.value;
       if (error instanceof DatabaseFailure) {
-         return res.status(404).json({ error: "User not found" });
+         return res.status(HttpStatus.NOT_FOUND).json({ success: false, message: "User not found", data: null });
       }
-      return res.status(500).json({ error: error.message });
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message, data: null });
     }
 
-    return res.status(200).json(result.value); // Domain entity serialized
+    return res.status(HttpStatus.OK).json({ success: true, message: "User retrieved successfully", data: result.value }); // Domain entity serialized
   }
 }
+
 ```
 
 ### 4.7 Presentation — DTOs & Validation
@@ -483,15 +485,16 @@ Ensure that DTO validation blocks bad requests before they hit the UseCase, and 
 // src/features/user/presentation/controllers/user_controller.spec.ts
 import { UserController } from './user_controller';
 import { GetUserUseCase } from '../../domain/usecases/get_user';
+import { HttpStatus } from '../../../../core/constants/http_status';
 
 describe('UserController', () => {
-  it('should return 400 when DTO validation fails (invalid UUID)', async () => {
+  it('should return BAD_REQUEST when DTO validation fails (invalid UUID)', async () => {
     const req = { params: { id: 'not-a-uuid' } } as any;
     const res = { status: jest.fn().mockReturnThis(), json: jest.fn() } as any;
 
     await UserController.getUser(req, res);
     
-    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ errors: expect.any(Array) }));
   });
 });

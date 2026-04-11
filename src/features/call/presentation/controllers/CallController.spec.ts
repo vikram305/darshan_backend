@@ -33,7 +33,9 @@ describe('CallController', () => {
     const response = await request(app).post('/api/calls/room').send();
 
     expect(response.status).toBe(201);
-    expect(response.body.room.code).toBe('999999');
+    expect(response.body.success).toBe(true);
+    expect(response.body.message).toBe('Room created successfully');
+    expect(response.body.data.room.code).toBe('999999');
   });
 
   it('should return error status and message on failure', async () => {
@@ -42,6 +44,7 @@ describe('CallController', () => {
     const response = await request(app).post('/api/calls/room').send();
 
     expect(response.status).toBe(500);
-    expect(response.body.error).toBe(ERROR_MESSAGES.ROOM_CREATION_FAILED);
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toBe(ERROR_MESSAGES.ROOM_CREATION_FAILED);
   });
 });
