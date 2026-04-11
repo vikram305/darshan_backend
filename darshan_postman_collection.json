@@ -1,0 +1,151 @@
+{
+	"info": {
+		"name": "Darshan Video Backend",
+		"description": "Postman collection for Darshan Video Calling Backend (REST + Socket.io Signaling)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "REST API (Room Management)",
+			"item": [
+				{
+					"name": "Create Room",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/calls/room",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"calls",
+								"room"
+							]
+						},
+						"description": "Creates a new 6-character room code."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/calls/room",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"calls",
+										"room"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Room created successfully\",\n    \"data\": {\n        \"room\": {\n            \"code\": \"123456\"\n        }\n    }\n}"
+						},
+						{
+							"name": "Error Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/calls/room",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"calls",
+										"room"
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": false,\n    \"message\": \"Failed to create room\",\n    \"data\": null\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Socket.io (Signaling)",
+			"item": [
+				{
+					"name": "JOIN_ROOM",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}",
+							"host": [
+								"{{baseUrl}}"
+							]
+						},
+						"description": "Event: JOIN_ROOM\nPayload: { \"roomCode\": \"123456\", \"peerName\": \"Vikram\" }"
+					},
+					"response": []
+				},
+				{
+					"name": "GET_ROUTER_RTP_CAPABILITIES",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}",
+							"host": [
+								"{{baseUrl}}"
+							]
+						},
+						"description": "Event: GET_ROUTER_RTP_CAPABILITIES\nPayload: { \"roomId\": \"123456\" }"
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE_TRANSPORT",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}",
+							"host": [
+								"{{baseUrl}}"
+							]
+						},
+						"description": "Event: CREATE_TRANSPORT\nPayload: { \"roomId\": \"123456\", \"peerId\": \"uuid\", \"direction\": \"send\" }"
+					},
+					"response": []
+				}
+			],
+			"description": "Use Postman's Socket.io Request type (New -> Socket.io). Connect to http://localhost:3000"
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}
