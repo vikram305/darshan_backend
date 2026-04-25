@@ -76,19 +76,20 @@ export class MediasoupDataSource {
     return router;
   }
 
-  public async createWebRtcTransport(roomId: string, peerId: string): Promise<types.WebRtcTransport> {
+  public async createWebRtcTransport(roomId: string, peerId: string, direction: 'send' | 'recv'): Promise<types.WebRtcTransport> {
     const router = await this.getOrCreateRouter(roomId);
 
     const transport = await router.createWebRtcTransport({
       listenIps: [
         {
-          ip: process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1',
-          announcedIp: process.env.NODE_ENV === 'production' ? config.MEDIASOUP_ANNOUNCED_IP : undefined,
+          ip: '0.0.0.0',
+          announcedIp: config.MEDIASOUP_ANNOUNCED_IP,
         },
       ],
       enableUdp: true,
       enableTcp: true,
       preferUdp: true,
+      appData: { direction }
     });
 
     if (!this.transports.has(peerId)) {

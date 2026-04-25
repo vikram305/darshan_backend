@@ -14,14 +14,14 @@ const DtlsParametersSchema = z.object({
 const RtpCodecCapabilitySchema = z.object({
   kind: z.enum(['audio', 'video']),
   mimeType: z.string(),
-  preferredPayloadType: z.number().optional(),
+  preferredPayloadType: z.number().nullable().optional(),
   clockRate: z.number(),
-  channels: z.number().optional(),
-  parameters: z.record(z.string(), z.unknown()).optional(),
+  channels: z.number().nullable().optional(),
+  parameters: z.record(z.string(), z.unknown()).nullable().optional(),
   rtcpFeedback: z.array(z.object({
     type: z.string(),
     parameter: z.string().optional(),
-  })).optional(),
+  })).nullable().optional(),
 });
 
 const RtpHeaderExtensionSchema = z.object({
@@ -41,12 +41,12 @@ const RtpCodecParametersSchema = z.object({
   mimeType: z.string(),
   payloadType: z.number(),
   clockRate: z.number(),
-  channels: z.number().optional(),
-  parameters: z.record(z.string(), z.unknown()).optional(),
+  channels: z.number().nullable().optional(),
+  parameters: z.record(z.string(), z.unknown()).nullable().optional(),
   rtcpFeedback: z.array(z.object({
     type: z.string(),
     parameter: z.string().optional(),
-  })).optional(),
+  })).nullable().optional(),
 });
 
 const RtpEncodingParametersSchema = z.object({
@@ -60,20 +60,20 @@ const RtpEncodingParametersSchema = z.object({
 });
 
 const RtpParametersSchema = z.object({
-  mid: z.string().optional(),
+  mid: z.string().nullable().optional(),
   codecs: z.array(RtpCodecParametersSchema),
   headerExtensions: z.array(z.object({
     uri: z.string(),
     id: z.number(),
     encrypt: z.boolean().optional(),
     parameters: z.record(z.string(), z.unknown()).optional(),
-  })).optional(),
-  encodings: z.array(RtpEncodingParametersSchema).optional(),
+  })).nullable().optional(),
+  encodings: z.array(RtpEncodingParametersSchema).nullable().optional(),
   rtcp: z.object({
     cname: z.string().optional(),
     reducedSize: z.boolean().optional(),
-  }).optional(),
-  msid: z.string().optional(),
+  }).nullable().optional(),
+  msid: z.string().nullable().optional(),
 });
 
 export const GetRouterCapabilitiesSchema = z.object({

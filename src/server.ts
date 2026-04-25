@@ -27,7 +27,9 @@ async function bootstrap() {
 
     // 3. Start Server
     server.listen(config.PORT, () => {
-      console.log(`🚀 Darshan Backend running on http://localhost:${config.PORT}`);
+      console.log(`🚀 Darshan Backend running on:`);
+      console.log(`   - Local:   http://localhost:${config.PORT}`);
+      console.log(`   - Network: http://${config.MEDIASOUP_ANNOUNCED_IP}:${config.PORT}`);
     });
 
   } catch (error) {

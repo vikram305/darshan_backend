@@ -26,8 +26,7 @@ export class WebRtcRepositoryImpl implements WebRtcRepository {
 
   async createTransport(roomId: string, peerId: string, direction: 'send' | 'recv'): Promise<Either<Failure, TransportOptions>> {
     try {
-      const transport = await this.mediasoupDataSource.createWebRtcTransport(roomId, peerId);
-      transport.appData = { direction };
+      const transport = await this.mediasoupDataSource.createWebRtcTransport(roomId, peerId, direction);
       return right({
         id: transport.id,
         iceParameters: transport.iceParameters as any,

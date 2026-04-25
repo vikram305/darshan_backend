@@ -8,6 +8,7 @@ import { ProduceUseCase } from '../../domain/usecases/ProduceUseCase';
 import { ConsumeUseCase } from '../../domain/usecases/ConsumeUseCase';
 import { ResumeConsumerUseCase } from '../../domain/usecases/ResumeConsumerUseCase';
 import { LeaveRoomUseCase } from '../../domain/usecases/LeaveRoomUseCase';
+import { CreateRoomUseCase } from '../../domain/usecases/CreateRoomUseCase';
 
 import { JoinRoomSchema } from '../dtos/RoomDtos';
 import {
@@ -23,12 +24,52 @@ import { SOCKET_EVENTS } from '../../../../core/constants/socket_events';
 export class SignalingGateway {
   // Map socket.id to a { roomId, peerId } pair to handle disconnects properly
   private activeConnections = new Map<string, { roomId: string; peerId: string }>();
+  // roomId -> List<{ peerId, producerId, kind }>
+  private roomProducers = new Map<string, Array<{ peerId: string, producerId: string, kind: string }>>();
 
   constructor(private io: Server) {}
 
   public init(): void {
     this.io.on(SOCKET_EVENTS.CONNECTION, (socket: Socket) => {
       console.log(`📡 New WebRTC Client connected: ${socket.id}`);
+      
+      // 0. Create Room
+      socket.on(SOCKET_EVENTS.CREATE_ROOM, async (payload: any, callback: Function) => {
+        const useCase = container.resolve(CreateRoomUseCase);
+        const result = await useCase.execute();
+
+        if (result.isLeft()) {
+          if (callback) callback({ error: result.value.message });
+          return;
+        }
+
+        const room = result.value;
+        console.log(`🏠 Room created: ${room.code}`);
+        
+        // After creating, we auto-join the creator
+        const joinUseCase = container.resolve(JoinRoomUseCase);
+        const joinResult = await joinUseCase.execute({ 
+          code: room.code, 
+          peerName: payload.displayName || 'Creator' 
+        });
+
+        if (joinResult.isLeft()) {
+          if (callback) callback({ error: joinResult.value.message });
+          return;
+        }
+
+        const { room: joinedRoom, newPeer } = joinResult.value;
+        socket.join(joinedRoom.code);
+        this.activeConnections.set(socket.id, { roomId: joinedRoom.code, peerId: newPeer.id });
+
+        if (callback) {
+          callback({ 
+            roomId: joinedRoom.code, 
+            deviceId: newPeer.id,
+            success: true 
+          });
+        }
+      });
 
       // 1. Join Room
       socket.on(SOCKET_EVENTS.JOIN_ROOM, async (payload: any, callback: Function) => {
@@ -56,7 +97,15 @@ export class SignalingGateway {
         console.log(`✅ Peer ${newPeer.name} joined room ${room.code}`);
 
         if (callback) {
-          callback({ success: true, room, peer: newPeer });
+          callback({ 
+            success: true, 
+            room: {
+              code: room.code,
+              peers: room.getPeers()
+            }, 
+            peer: newPeer,
+            producers: this.roomProducers.get(room.code) || []
+          });
         }
 
         socket.to(room.code).emit(SOCKET_EVENTS.PEER_JOINED, newPeer);
@@ -104,11 +153,21 @@ export class SignalingGateway {
         if (!parsed.success) return callback && callback({ error: parsed.error.format() });
 
         const useCase = container.resolve(ProduceUseCase);
-        const result = await useCase.execute(parsed.data);
+        const result = await useCase.execute(parsed.data as any);
 
         if (result.isLeft()) return callback && callback({ error: result.value.message });
         
         const producerId = result.value;
+        
+        // Track producer
+        const producers = this.roomProducers.get(parsed.data.roomId) || [];
+        producers.push({ 
+            peerId: parsed.data.peerId, 
+            producerId, 
+            kind: parsed.data.kind 
+        });
+        this.roomProducers.set(parsed.data.roomId, producers);
+
         if (callback) callback({ id: producerId });
         
         // Notify others in room
@@ -125,7 +184,7 @@ export class SignalingGateway {
         if (!parsed.success) return callback && callback({ error: parsed.error.format() });
 
         const useCase = container.resolve(ConsumeUseCase);
-        const result = await useCase.execute(parsed.data);
+        const result = await useCase.execute(parsed.data as any);
 
         if (result.isLeft()) return callback && callback({ error: result.value.message });
         if (callback) callback({ consumerOptions: result.value });
@@ -143,6 +202,21 @@ export class SignalingGateway {
         if (callback) callback({ success: true });
       });
 
+      // 8. Leave Room
+      socket.on(SOCKET_EVENTS.LEAVE_ROOM, async (payload: any, callback: Function) => {
+        const connection = this.activeConnections.get(socket.id);
+        if (connection) {
+          const { roomId, peerId } = connection;
+          const useCase = container.resolve(LeaveRoomUseCase);
+          await useCase.execute({ roomId, peerId });
+          socket.to(roomId).emit(SOCKET_EVENTS.PEER_LEFT, { peerId });
+          this.removePeerProducers(roomId, peerId);
+          this.activeConnections.delete(socket.id);
+          socket.leave(roomId);
+          if (callback) callback({ success: true });
+        }
+      });
+
       // Handle Disconnect & Cleanup
       socket.on(SOCKET_EVENTS.DISCONNECT, async () => {
         console.log(`Client disconnected: ${socket.id}`);
@@ -157,10 +231,18 @@ export class SignalingGateway {
           // Notify others in the room
           socket.to(roomId).emit(SOCKET_EVENTS.PEER_LEFT, { peerId });
           
+          this.removePeerProducers(roomId, peerId);
           this.activeConnections.delete(socket.id);
           console.log(`🧹 Cleaned up peer ${peerId} from room ${roomId}`);
         }
       });
     });
+  }
+
+  private removePeerProducers(roomId: string, peerId: string): void {
+    const producers = this.roomProducers.get(roomId);
+    if (producers) {
+      this.roomProducers.set(roomId, producers.filter(p => p.peerId !== peerId));
+    }
   }
 }

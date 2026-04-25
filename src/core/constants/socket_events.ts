@@ -11,4 +11,6 @@ export const SOCKET_EVENTS = {
   RESUME_CONSUMER: 'resume-consumer',
   NEW_PRODUCER: 'new-producer',
   PEER_LEFT: 'peer-left',
+  CREATE_ROOM: 'create-room',
+  LEAVE_ROOM: 'leave-room',
 };
